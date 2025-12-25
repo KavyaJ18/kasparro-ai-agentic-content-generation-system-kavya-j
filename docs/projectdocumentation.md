@@ -1,58 +1,111 @@
 # Problem Statement
-The goal of this project is to design and implement a modular, agent-based automation system that transforms a fixed product dataset into structured, machine-readable content pages.
 
-The system must automatically generate:
+The goal of this project is to design and implement a modular, agent-based
+automation system that transforms a fixed product dataset into structured,
+machine-readable content pages using an orchestrated multi-agent workflow.
+
+The system automatically generates:
 - a FAQ page
 - a product description page
 - a comparison page
 
-The assignment focuses on system design, agent orchestration, and automation rather than content creativity or domain expertise.
+The assignment emphasizes agent orchestration, validation, and automation
+rather than manual content creation.
+
+---
 
 # Solution Overview
-This project implements a multi-agent content generation pipeline where each component has a single, well-defined responsibility.
 
-The system is composed of independent agents, reusable logic blocks, and structured templates, all coordinated by a central orchestrator. The pipeline takes raw product data as input and produces multiple structured JSON outputs without shared global state.
+This project implements a LangGraph-based multi-agent content generation
+pipeline. Each agent is responsible for a single, well-defined task and
+communicates through a shared state object.
+
+Agents are executed as nodes in a StateGraph, ensuring deterministic
+execution flow, clear separation of concerns, and extensibility.
+
+---
 
 # Scope & Assumptions
-Scope:
-- The system operates strictly on the provided product dataset.
-- No external APIs or external knowledge sources are used.
-- All generated content is deterministic.
 
-Assumptions:
-- A fictional product is used for comparison purposes.
-- The system can be extended to support additional products with similar schemas.
-- This implementation focuses only on backend automation and content generation.
+## Scope
+- The system operates strictly on the provided product dataset.
+- All outputs are generated dynamically at runtime.
+- Outputs are structured and machine-readable.
+- Deterministic execution is supported for local testing.
+
+## Assumptions
+- A fictional product is generated for comparison purposes.
+- The system can be extended to support additional product schemas.
+- This implementation focuses on backend automation and orchestration.
+
+---
 
 # System Design
-The system follows a layered agentic architecture with clear separation of concerns.
 
-Agents are responsible for preparing or transforming data. Templates are responsible only for assembling structured outputs. Reusable logic blocks encapsulate transformation rules. A central orchestrator controls execution flow and ensures agents remain decoupled.
+The system is implemented using LangGraph and follows a graph-based agentic
+architecture.
 
-This design improves modularity, testability, and extensibility while avoiding monolithic scripts or tightly coupled components.
+- Each agent is represented as a graph node.
+- A shared state object is passed and updated between agents.
+- Execution flow is controlled by a StateGraph rather than procedural code.
+- Validation logic ensures minimum output requirements and schema correctness.
+
+This design avoids monolithic scripts and tightly coupled components while
+improving testability and robustness.
+
+---
 
 # Agent Responsibilities
-- DataParserAgent: Normalizes raw input data into an internal representation.
-- QuestionGeneratorAgent: Generates categorized user questions based on product data.
-- ComparisonAgent: Prepares structured comparison data between two products.
-- FAQTemplateAgent: Assembles FAQ content into structured JSON.
-- ProductPageTemplateAgent: Formats product data into a product page structure.
-- ComparisonTemplateAgent: Formats comparison data into a comparison page structure.
+
+- **QuestionAgent**
+  Generates and validates a minimum of 15 user FAQs.
+
+- **FAQAgent**
+  Generates concise answers for each FAQ using product data.
+
+- **ProductAgent**
+  Produces a structured product description page in JSON format.
+
+- **ComparisonAgent**
+  Generates a structured comparison between two products.
+
+Each agent updates the shared state and passes it forward in the graph.
+
+---
+
+# LLM Integration
+
+The system uses a LangChain-compatible LLM abstraction.
+
+- In production, agents can be backed by a real LLM provider.
+- For local execution and deterministic testing, a mock LLM implementation
+  is provided that conforms to the same interface.
+- This ensures realistic agent behavior without external API dependency.
+
+---
 
 # Automation Flow
-1. Raw product data is passed to the orchestrator.
-2. The orchestrator invokes the data parser agent.
-3. Parsed data is sent to the question generation agent.
-4. Template agents assemble structured content pages.
-5. The runner executes the pipeline and writes JSON outputs to disk.
 
+1. Initial product data is loaded into the graph state.
+2. The QuestionAgent generates and validates FAQs.
+3. The FAQAgent generates answers for each question.
+4. The ProductAgent generates a structured product page.
+5. The ComparisonAgent generates a structured comparison page.
+6. The LangGraph runner executes the graph and returns final outputs.
+
+---
 
 # Output Structure
-The system generates the following machine-readable outputs:
 
-- faq.json: Contains structured question and answer pairs.
-- product_page.json: Contains structured product information such as ingredients, usage, and price.
-- comparison_page.json: Contains structured comparison data between two products.
+The system produces the following machine-readable JSON outputs:
 
-All outputs are formatted as clean JSON for downstream consumption.
+- **faq.json**
+  Contains structured question-answer pairs (15+ enforced).
 
+- **product_page.json**
+  Contains structured product information such as ingredients, usage, and price.
+
+- **comparison_page.json**
+  Contains structured comparison data between two products.
+
+All outputs are generated at runtime and validated before use.
