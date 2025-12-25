@@ -1,9 +1,12 @@
+from graph.graph import build_graph
+from graph.state import AgentState
 import json
-from orchestrator import Orchestrator
+import os
 
 
 def main():
-    raw_product_data = {
+    # Sample input product data
+    product_data = {
         "Product Name": "GlowBoost Vitamin C Serum",
         "Concentration": "10% Vitamin C",
         "Skin Type": ["Oily", "Combination"],
@@ -14,17 +17,24 @@ def main():
         "Price": "₹699"
     }
 
-    orchestrator = Orchestrator()
-    output = orchestrator.run(raw_product_data)
+    graph = build_graph()
 
-    with open("faq.json", "w", encoding="utf-8") as f:
-        json.dump(output["faq"], f, indent=2)
+    state = AgentState(product_data=product_data)
 
-    with open("product_page.json", "w", encoding="utf-8") as f:
-        json.dump(output["product_page"], f, indent=2)
+    result = graph.invoke(state)
 
-    with open("comparison_page.json", "w", encoding="utf-8") as f:
-        json.dump(output["comparison_page"], f, indent=2)
+    os.makedirs("outputs", exist_ok=True)
+
+    with open("outputs/faq.json", "w", encoding="utf-8") as f:
+        json.dump(result["faq"], f, indent=2)
+
+    with open("outputs/product_page.json", "w", encoding="utf-8") as f:
+        json.dump(result["product_page"], f, indent=2)
+
+    with open("outputs/comparison_page.json", "w", encoding="utf-8") as f:
+        json.dump(result["comparison_page"], f, indent=2)
+
+    print("✅ Pipeline executed successfully. Outputs written to /outputs")
 
 
 if __name__ == "__main__":

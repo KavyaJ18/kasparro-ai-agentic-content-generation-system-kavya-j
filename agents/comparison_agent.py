@@ -1,18 +1,40 @@
-class ComparisonAgent:
-    def build_comparison(self, product: dict) -> dict:
-        fictional_product = {
-            "name": "Radiant C Serum",
-            "ingredients": ["Vitamin C"],
-            "benefits": ["Brightening"],
-            "price": "₹799"
-        }
+from langchain.prompts import ChatPromptTemplate
+from llm.model import get_llm
+from graph.state import AgentState
+import json
 
-        return {
-            "product_a": {
-                "name": product["name"],
-                "ingredients": product["ingredients"],
-                "benefits": product["benefits"],
-                "price": product["price"]
-            },
-            "product_b": fictional_product
-        }
+
+PROMPT = ChatPromptTemplate.from_template("""
+You are an AI agent generating a product comparison.
+
+Product A:
+{product}
+
+Rules:
+- Generate a fictional Product B
+- Use similar structure as Product A
+- Return a VALID JSON object
+- Do not add external facts
+""")
+
+
+def comparison_agent(state: AgentState):
+    llm = get_llm()
+
+    response = llm.invoke(
+        PROMPT.format(product=state.product_data)
+    )
+
+    content = response.content.strip()
+
+    try:
+        comparison = json.loads(content)
+    except json.JSONDecodeError:
+        raise ValueError(f"Invalid JSON from comparison agent: {content}")
+
+    state.comparison_page = {
+        "page_type": "comparison",
+        "data": comparison
+    }
+
+    return state
