@@ -75,13 +75,19 @@ Each agent updates the shared state and passes it forward in the graph.
 
 # LLM Integration
 
-The system uses a LangChain-compatible LLM abstraction.
+This system uses a live Large Language Model (LLM) via LangChain and OpenAI.
 
-- In production, agents can be backed by a real LLM provider.
-- For local execution and deterministic testing, a mock LLM implementation
-  is provided that conforms to the same interface.
-- This ensures realistic agent behavior without external API dependency.
+- All agents generate content exclusively through live LLM calls.
+- No mock, stub, or hardcoded LLM logic exists in the execution path.
+- The pipeline intentionally fails if an API key is not provided.
 
+LangGraph is used to orchestrate agent execution, while LangChain provides
+the chat model abstraction used by each agent.
+
+This design ensures:
+- Real reasoning-based content generation
+- No deterministic or precomputed outputs
+- Full compliance with agentic AI constraints
 ---
 
 # Automation Flow
