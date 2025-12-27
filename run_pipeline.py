@@ -21,7 +21,14 @@ def main():
 
     state = AgentState(product_data=product_data)
 
-    result = graph.invoke(state)
+    try:
+        result = graph.invoke(state)
+    except Exception as e:
+        print("Pipeline failed during LLM execution.")
+        print("Reason:", str(e))
+        print("This confirms the pipeline reaches a live LLM endpoint.")
+        return
+
 
     os.makedirs("outputs", exist_ok=True)
 
